@@ -6,5 +6,5 @@ zip -r project1.zip GetWebpage.java ParseJSON.java build.sh task3.txt README.md
 
 To test the submission file, run:
 ```
-./p1_test project1.zip
+./p1_test.sh project1.zip
 ```
