@@ -51,3 +51,44 @@ curl -H "Content-Type: application/json" -XPOST 'localhost:9200/task2/wikipage/_
 
 # Task 3:
 # Create index "task3" with "wikipage"
+echo 'Task 3b...'
+curl -XPUT 'localhost:9200/task3b?pretty' -H 'Content-Type: application/json' -d'
+{
+  "mappings": {
+    "wikipage": {
+      "properties": {
+        "clicks": {
+          "type":       "long",
+          "index":      "not_analyzed",
+          "doc_values": true
+        },
+        "abstract" : {
+          "type" :    "text",
+          "analyzer": "standard"
+        },
+        "url" : {
+          "type" :   "text",
+          "analyzer": "standard"
+        },
+        "title" : {
+          "type" :   "text",
+          "analyzer": "standard"
+        },
+        "sections" : {
+          "type" :   "text",
+          "analyzer": "standard"
+        }
+      }
+    }
+  },
+  "settings": {
+    "index": {
+      "similarity": {
+        "default": {
+          "type": "BM25"
+        }
+      }
+    }
+  }
+}'
+curl -H "Content-Type: application/json" -XPOST 'localhost:9200/task3b/wikipage/_bulk?pretty&refresh' --data-binary "@data/out.txt"
