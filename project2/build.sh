@@ -32,7 +32,22 @@ curl -H "Content-Type: application/json" -XPOST 'localhost:9200/task1b/wikipage/
 
 # TASK 2:
 # Create index "task2" with "wikipage" type using BM25Similarity with the best k1 and b values that you found
-
+echo 'Task 2...'
+curl -XPUT 'localhost:9200/task2/_settings?pretty' -H 'Content-Type: application/json' -d'
+{
+  "settings": {
+    "index": {
+      "similarity": {
+        "default": {
+          "type": "BM25",
+          "k1": 0.80,
+          "b": 0.50
+        }
+      }
+    }
+  }
+}'
+curl -H "Content-Type: application/json" -XPOST 'localhost:9200/task2/wikipage/_bulk?pretty&refresh' --data-binary "@data/out.txt"
 
 # Task 3:
 # Create index "task3" with "wikipage"
