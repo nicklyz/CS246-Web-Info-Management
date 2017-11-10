@@ -33,7 +33,7 @@ curl -H "Content-Type: application/json" -XPOST 'localhost:9200/task1b/wikipage/
 # TASK 2:
 # Create index "task2" with "wikipage" type using BM25Similarity with the best k1 and b values that you found
 echo 'Task 2...'
-curl -XPUT 'localhost:9200/task2/_settings?pretty' -H 'Content-Type: application/json' -d'
+curl -XPUT 'localhost:9200/task2?pretty' -H 'Content-Type: application/json' -d'
 {
   "settings": {
     "index": {
@@ -54,40 +54,35 @@ curl -H "Content-Type: application/json" -XPOST 'localhost:9200/task2/wikipage/_
 echo 'Task 3b...'
 curl -XPUT 'localhost:9200/task3b?pretty' -H 'Content-Type: application/json' -d'
 {
-  "mappings": {
-    "wikipage": {
-      "properties": {
-        "clicks": {
-          "type":       "long",
-          "index":      "not_analyzed",
-          "doc_values": true
-        },
-        "abstract" : {
-          "type" :    "text",
-          "analyzer": "standard"
-        },
-        "url" : {
-          "type" :   "text",
-          "analyzer": "standard"
-        },
-        "title" : {
-          "type" :   "text",
-          "analyzer": "standard"
-        },
-        "sections" : {
-          "type" :   "text",
-          "analyzer": "standard"
-        }
-      }
-    }
-  },
   "settings": {
     "index": {
       "similarity": {
         "default": {
-          "type": "BM25"
+          "type": "cs246-similarity"
         }
       }
+    }
+  }
+}'
+curl -XPUT 'localhost:9200/task3b/_mapping/wikipage?pretty' -H 'Content-Type: application/json' -d'
+{
+  "properties": {
+    "clicks": {
+      "type":       "long",
+      "index":      "not_analyzed",
+      "doc_values": true
+    },
+    "abstract" : {
+      "type" :    "text"
+    },
+    "url" : {
+      "type" :   "text"
+    },
+    "title" : {
+      "type" :   "text"
+    },
+    "sections" : {
+      "type" :   "text"
     }
   }
 }'
