@@ -40,7 +40,7 @@ import org.elasticsearch.common.settings.Settings;
 
 
 /**
- * A subclass of {@code Similarity} that provides a simplified API 
+ * A subclass of {@code Similarity} that provides a simplified API
  * to implement a custom scoring function based on tf, idf, payload and doc-values
  * Subclasses are only required to implement the {@link #score}
  * and {@link #toString()} methods. Implementing
@@ -84,32 +84,32 @@ public class CS246Similarity extends Similarity {
     //    stats.numberofFieldTokens: the total # of tokens extracted from the field
     //    stats.avgFieldLength: the average length of the field
     //    stats.docFreq: the document frequency
-    //    stats.totalTermFrequecy: the collection frequency 
+    //    stats.totalTermFrequecy: the collection frequency
     //             (= total # of occurence of the term across all documents)
     //    You may use these statistics to compute the idf value, for example.
     // The second parameter tf has "term frequency"
     // The third parameter docLen is the "document length", |d|
     // The last parameter docValue has the value in the field "clicks" of the document.
-    //    Note: If we want to use a value from a field other than "clicks", we need to change 
+    //    Note: If we want to use a value from a field other than "clicks", we need to change
     //    the CS246Similarity constructor by setting "signalField" to the name of the desired field.
 
     return tf*idf(stats)*docValueBoost(docValue)/docLen;
   }
-  
+
   protected float idf(BasicStats stats)
   {
-    return 1f;
+    return (float)(Math.log(((float)stats.numberOfDocuments+1)/((float)stats.totalTermFreq+1))/LOG_2);
   }
 
   protected float docValueBoost(long docValue)
   {
-    return 1f;
+    return (float)(Math.log((float)(docValue+1))/LOG_2);
   }
 
   /**
    * Add the explanation for all subexpressions of the scoring function
    * Here, we add explanations on tf, idf, 1/|d|, and click signal
-   * 
+   *
    * @param subExpls explanations for subexpressions should be to this
    * @param stats the corpus level statistics.
    * @param doc the document id.
@@ -119,7 +119,7 @@ public class CS246Similarity extends Similarity {
    */
   protected void explain(
       List<Explanation> subExpls, BasicStats stats, int doc, float freq, float docLen, long docValue) {
-    float clicks = docValueBoost(docValue);  
+    float clicks = docValueBoost(docValue);
     subExpls.add(Explanation.match(freq, "tf"));
     subExpls.add(Explanation.match(idf(stats), "idf"));
     subExpls.add(Explanation.match(docLen, "|d|"));
@@ -130,13 +130,13 @@ public class CS246Similarity extends Similarity {
 
   /** For {@link #log2(double)}. Precomputed for efficiency reasons. */
   private static final double LOG_2 = Math.log(2);
-  
-  /** 
+
+  /**
    * True if overlap tokens (tokens with a position of increment of zero) are
    * discounted from the document's length.
    */
   protected boolean discountOverlaps = true;
-  
+
   /** Determines whether overlap tokens (Tokens with
    *  0 position increment) are ignored when computing
    *  norm.  By default this is true, meaning overlap
@@ -150,14 +150,14 @@ public class CS246Similarity extends Similarity {
   }
 
   /**
-   * Returns true if overlap tokens are discounted from the document's length. 
-   * @see #setDiscountOverlaps 
+   * Returns true if overlap tokens are discounted from the document's length.
+   * @see #setDiscountOverlaps
    * @return discountOverlaps value
    */
   public boolean getDiscountOverlaps() {
     return discountOverlaps;
   }
-  
+
   @Override
   public final SimWeight computeWeight(CollectionStatistics collectionStats, TermStatistics... termStats) {
     BasicStats stats[] = new BasicStats[termStats.length];
@@ -167,26 +167,26 @@ public class CS246Similarity extends Similarity {
     }
     return stats.length == 1 ? stats[0] : new MultiStats(stats);
   }
-  
-  /** Factory method to return a custom stats object 
+
+  /** Factory method to return a custom stats object
    * @param field name of the SimWeight field
    * @return BasicStats
    */
 protected BasicStats newStats(String field) {
     return new BasicStats(field);
   }
-  
-  /** Fills all member fields defined in {@code BasicStats} in {@code stats}. 
-   *  Subclasses can override this method to fill additional stats. 
+
+  /** Fills all member fields defined in {@code BasicStats} in {@code stats}.
+   *  Subclasses can override this method to fill additional stats.
    * @param stats is used as the output to store relevant statistics
-   * @param collectionStats  collection-wide statistics  
+   * @param collectionStats  collection-wide statistics
    * @param termStats  term-specific statistics
    */
 protected void fillBasicStats(BasicStats stats, CollectionStatistics collectionStats, TermStatistics termStats) {
     // #positions(field) must be >= #positions(term)
     assert collectionStats.sumTotalTermFreq() == -1 || collectionStats.sumTotalTermFreq() >= termStats.totalTermFreq();
     long numberOfDocuments = collectionStats.docCount() == -1 ? collectionStats.maxDoc() : collectionStats.docCount();
-    
+
     long docFreq = termStats.docFreq();
     long totalTermFreq = termStats.totalTermFreq();
 
@@ -211,7 +211,7 @@ protected void fillBasicStats(BasicStats stats, CollectionStatistics collectionS
       numberOfFieldTokens = sumTotalTermFreq;
       avgFieldLength = (float)numberOfFieldTokens / numberOfDocuments;
     }
- 
+
     stats.setNumberOfDocuments(numberOfDocuments);
     stats.setNumberOfFieldTokens(numberOfFieldTokens);
     stats.setAvgFieldLength(avgFieldLength);
@@ -219,7 +219,7 @@ protected void fillBasicStats(BasicStats stats, CollectionStatistics collectionS
     stats.setTotalTermFreq(totalTermFreq);
     stats.setTerm(new Term(stats.field, termStats.term()));
   }
-  
+
   /**
    * Explains the score. The implementation here provides a basic explanation
    * in the format <em>score(name-of-similarity, doc=doc-id,
@@ -228,7 +228,7 @@ protected void fillBasicStats(BasicStats stats, CollectionStatistics collectionS
    * method) and the explanation for the term frequency. Subclasses content with
    * this format may add additional details in
    * {@link #explain(List, BasicStats, int, float, float, long)}.
-   *  
+   *
    * @param stats the corpus level statistics.
    * @param doc the document id.
    * @param freq the term frequency and its explanation.
@@ -240,37 +240,37 @@ protected void fillBasicStats(BasicStats stats, CollectionStatistics collectionS
       BasicStats stats, int doc, Explanation freq, float docLen, long signal) {
     List<Explanation> subs = new ArrayList<>();
     explain(subs, stats, doc, freq.getValue(), docLen, signal);
-    
+
     return Explanation.match(
         score(stats, freq.getValue(), docLen, signal),
         "score(" + getClass().getSimpleName() + ", doc=" + doc + ", freq=" + freq.getValue() +"), computed from:",
         subs);
   }
-  
+
   @Override
   public SimScorer simScorer(SimWeight stats, LeafReaderContext context) throws IOException {
     if (stats instanceof MultiStats) {
-      // a multi term query (e.g. phrase). return the summation, 
+      // a multi term query (e.g. phrase). return the summation,
       // scoring almost as if it were boolean query
       SimWeight subStats[] = ((MultiStats) stats).subStats;
       SimScorer subScorers[] = new SimScorer[subStats.length];
       for (int i = 0; i < subScorers.length; i++) {
         BasicStats basicstats = (BasicStats) subStats[i];
-        subScorers[i] = new CS246SimScorer(basicstats, context, 
-          context.reader().getNormValues(basicstats.field), 
+        subScorers[i] = new CS246SimScorer(basicstats, context,
+          context.reader().getNormValues(basicstats.field),
           context.reader().getSortedNumericDocValues(signalField));
       }
       return new MultiSimScorer(subScorers);
     } else {
       BasicStats basicstats = (BasicStats) stats;
       return new CS246SimScorer(basicstats, context,
-        context.reader().getNormValues(basicstats.field), 
+        context.reader().getNormValues(basicstats.field),
         context.reader().getSortedNumericDocValues(signalField));
     }
   }
-  
+
     // ------------------------------ Norm handling ------------------------------
-  
+
   /** Norm to document length map. */
   private static final float[] NORM_TABLE = new float[256];
 
@@ -292,7 +292,7 @@ protected void fillBasicStats(BasicStats stats, CollectionStatistics collectionS
       numTerms = state.getLength();
     return encodeNormValue(state.getBoost(), numTerms);
   }
-  
+
   /** Decodes a normalization factor (document length) stored in an index.
    * @param norm  encoded length normal value
    * @return decoded length normal value
@@ -301,8 +301,8 @@ protected void fillBasicStats(BasicStats stats, CollectionStatistics collectionS
   protected float decodeNormValue(byte norm) {
     return NORM_TABLE[norm & 0xFF];  // & 0xFF maps negative bytes to positive above 127
   }
-  
-  /** Encodes the length to a byte via SmallFloat. 
+
+  /** Encodes the length to a byte via SmallFloat.
    * @param boost  field boost factor
    * @param length field length
    * @return encoded length normal value
@@ -310,10 +310,10 @@ protected void fillBasicStats(BasicStats stats, CollectionStatistics collectionS
   protected byte encodeNormValue(float boost, float length) {
     return SmallFloat.floatToByte315((boost / (float) Math.sqrt(length)));
   }
-  
+
   // ----------------------------- Static methods ------------------------------
-  
-  /** Returns the base two logarithm of {@code x}. 
+
+  /** Returns the base two logarithm of {@code x}.
    * @param x input
    * @return log2(x)
    */
@@ -321,9 +321,9 @@ protected void fillBasicStats(BasicStats stats, CollectionStatistics collectionS
     // Put this to a 'util' class if we need more of these.
     return Math.log(x) / LOG_2;
   }
-  
+
   // --------------------------------- Classes ---------------------------------
-  
+
   /** Delegates the {@link #score(int, float)} and
    * {@link #explain(int, Explanation)} methods to
    * {@link CS246Similarity#score(BasicStats, float, float, long)} and
@@ -335,7 +335,7 @@ protected void fillBasicStats(BasicStats stats, CollectionStatistics collectionS
     private final LeafReaderContext context;
     private final NumericDocValues norms;
     private final SortedNumericDocValues signals;
-    
+
     CS246SimScorer(BasicStats stats, LeafReaderContext context, NumericDocValues norms, SortedNumericDocValues signals) throws IOException {
       this.stats = stats;
       this.context = context;
@@ -353,15 +353,15 @@ protected void fillBasicStats(BasicStats stats, CollectionStatistics collectionS
     @Override
     public float score(int doc, float freq) {
       // We have to supply something in case norms are omitted
-      return CS246Similarity.this.score(stats, freq, 
-          norms == null ? 1F : decodeNormValue((byte)norms.get(doc)), 
+      return CS246Similarity.this.score(stats, freq,
+          norms == null ? 1F : decodeNormValue((byte)norms.get(doc)),
           getSignal(doc));
     }
 
     @Override
     public Explanation explain(int doc, Explanation freq) {
-      return CS246Similarity.this.explain(stats, doc, freq, 
-          norms == null ? 1F : decodeNormValue((byte)norms.get(doc)), 
+      return CS246Similarity.this.explain(stats, doc, freq,
+          norms == null ? 1F : decodeNormValue((byte)norms.get(doc)),
           getSignal(doc));
     }
 
@@ -382,11 +382,11 @@ protected void fillBasicStats(BasicStats stats, CollectionStatistics collectionS
 
   static class MultiSimScorer extends SimScorer {
     private final SimScorer subScorers[];
-    
+
     MultiSimScorer(SimScorer subScorers[]) {
       this.subScorers = subScorers;
     }
-    
+
     @Override
     public float score(int doc, float freq) {
       float sum = 0.0f;
@@ -429,42 +429,42 @@ protected void fillBasicStats(BasicStats stats, CollectionStatistics collectionS
   /** The total number of occurrences of this term across all documents. */
   protected long totalTermFreq;
   protected Term term;
-  
+
   // -------------------------- Boost-related stuff --------------------------
 
   /** For most Similarities, the immediate and the top level query boosts are
    * not handled differently. Hence, this field is just the product of the
    * other two. */
   protected float boost;
-  
+
   /** Constructor. */
   BasicStats(String field) {
     this.field = field;
     normalize(1f, 1f);
   }
-  
+
   // ------------------------- Getter/setter methods -------------------------
-  
+
   /** Returns the term. */
   public Term getTerm() {
     return term;
   }
-  
+
   /** Sets the term. */
   public void setTerm(Term term) {
     this.term = term;
   }
-  
+
   /** Returns the number of documents. */
   public long getNumberOfDocuments() {
     return numberOfDocuments;
   }
-  
+
   /** Sets the number of documents. */
   public void setNumberOfDocuments(long numberOfDocuments) {
     this.numberOfDocuments = numberOfDocuments;
   }
-  
+
   /**
    * Returns the total number of tokens in the field.
    * @see Terms#getSumTotalTermFreq()
@@ -472,7 +472,7 @@ protected void fillBasicStats(BasicStats stats, CollectionStatistics collectionS
   public long getNumberOfFieldTokens() {
     return numberOfFieldTokens;
   }
-  
+
   /**
    * Sets the total number of tokens in the field.
    * @see Terms#getSumTotalTermFreq()
@@ -480,39 +480,39 @@ protected void fillBasicStats(BasicStats stats, CollectionStatistics collectionS
   public void setNumberOfFieldTokens(long numberOfFieldTokens) {
     this.numberOfFieldTokens = numberOfFieldTokens;
   }
-  
+
   /** Returns the average field length. */
   public float getAvgFieldLength() {
     return avgFieldLength;
   }
-  
+
   /** Sets the average field length. */
   public void setAvgFieldLength(float avgFieldLength) {
     this.avgFieldLength = avgFieldLength;
   }
-  
+
   /** Returns the document frequency. */
   public long getDocFreq() {
     return docFreq;
   }
-  
+
   /** Sets the document frequency. */
   public void setDocFreq(long docFreq) {
     this.docFreq = docFreq;
   }
-  
+
   /** Returns the total number of occurrences of this term across all documents. */
   public long getTotalTermFreq() {
     return totalTermFreq;
   }
-  
+
   /** Sets the total number of occurrences of this term across all documents. */
   public void setTotalTermFreq(long totalTermFreq) {
     this.totalTermFreq = totalTermFreq;
   }
-  
+
   // -------------------------- Boost-related stuff --------------------------
-  
+
   /** The square of the raw normalization value.
    * @see #rawNormalizationValue() */
   @Override
@@ -520,7 +520,7 @@ protected void fillBasicStats(BasicStats stats, CollectionStatistics collectionS
     float rawValue = rawNormalizationValue();
     return rawValue * rawValue;
   }
-  
+
   /** Computes the raw normalization value. This basic implementation returns
    * the query boost. Subclasses may override this method to include other
    * factors (such as idf), or to save the value for inclusion in
@@ -529,13 +529,13 @@ protected void fillBasicStats(BasicStats stats, CollectionStatistics collectionS
   protected float rawNormalizationValue() {
     return boost;
   }
-  
+
   /** No normalization is done. {@code boost} is saved in the object, however. */
   @Override
   public void normalize(float queryNorm, float boost) {
     this.boost = boost;
   }
-  
+
   /** Returns the total boost. */
   public float getBoost() {
     return boost;
@@ -545,11 +545,11 @@ protected void fillBasicStats(BasicStats stats, CollectionStatistics collectionS
 
   static class MultiStats extends SimWeight {
     final SimWeight subStats[];
-    
+
     MultiStats(SimWeight subStats[]) {
       this.subStats = subStats;
     }
-    
+
     @Override
     public float getValueForNormalization() {
       float sum = 0.0f;
@@ -567,5 +567,3 @@ protected void fillBasicStats(BasicStats stats, CollectionStatistics collectionS
     }
   }
 }
-
-
