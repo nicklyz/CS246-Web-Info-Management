@@ -64,8 +64,16 @@ public class SpellChecker {
             }
 
             // TODO: implement transposition operator here
+            if (L.length() > 0 && R.length() > 0) {
+		temp = L.substring(0, i-1) + R.charAt(0) + L.charAt(i-1) + R.substring(1);
+		cands.put(temp, 1.0);
+            }
 
             // TODO: implement substitution operator here
+            for (int j = 0; j < alphabet.length(); ++j) {
+		temp = R.length() > 0 ? L + alphabet.charAt(j) + R.substring(1) : L + alphabet.charAt(j);
+		cands.put(temp, 1.0);
+	    }
         }
         return cands;
     }
