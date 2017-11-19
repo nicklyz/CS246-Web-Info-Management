@@ -24,7 +24,7 @@ public class SpellChecker {
         // TODO: modify this function so that it uses the relative frequency of the word in computing P(word).
         //       You can access frequency of word from "dict" like dict.get(word)
         //
-        return dict.containsKey(word) ? 1.0 : 0.0;
+        return dict.containsKey(word) ? dict.get(word) : 0.0;
     }
 
     /*
