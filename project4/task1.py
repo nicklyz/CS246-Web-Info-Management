@@ -22,8 +22,17 @@ rank = int(sys.argv[2])
 outputpng = getOutputPngName(inputfile, rank)
 outputnpy = getOutputNpyName(inputfile, rank)
 
-#
-# TODO: The current code just prints out what it is supposed to to
-#       Replace the print statement wth your code
-#
-print("This program should read %s file, perform rank %d approximation, and save the results in %s and %s files." % (inputfile, rank, outputpng, outputnpy))
+# Load image
+image = scipy.misc.imread(inputfile)
+
+# singular value decomposition
+u, s, v = numpy.linalg.svd(image)
+
+# rank-k approximation
+result = numpy.zeros(image.shape)
+for i in range(rank):
+    result += s[i] * numpy.outer(u.T[i], v[i])
+
+numpy.save(outputnpy, arr=result)
+scipy.misc.imsave(outputpng, arr=result)
+print("Rank-k approximation images saved!")
