@@ -1,0 +1,20 @@
+0: Data Analysis
+1: Fundamental Research
+2: African American Social Research
+3: Global Warming Research
+4: Chemistry
+5: Commercial Technology Project
+6: Social Economic Research
+7: Research University
+8: Networking System
+9: University Education
+10: Research Resource
+11: Optical Research
+12: Mechanical Evolution
+13: System Data Measurement
+14: Geometry
+15: Computational Model
+16: Seismic Study
+17: Physics
+18: Cellular Biology
+19: Evolutionary Biology
